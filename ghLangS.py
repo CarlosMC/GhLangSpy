@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 import os
 from dotenv import load_dotenv
 import requests
-
+import json
 
 load_dotenv()
 GH_AT = os.getenv('GH_AUTH_TOKEN')
@@ -12,7 +14,22 @@ if not GH_AT:
     exit(1)
 
 
-response = requests.get('https://api.github.com/repos/lsst-it/lsst-control/languages', headers={'Authorization': "Bearer {}".format(GH_AT) })
+myHeader={'Accept': 'application/vnd.github+json',
+            'Authorization': "Bearer {}".format(GH_AT), 
+            'X-GitHub-Api-Version': '2022-11-28'}
 
-print(response.json())
+apiRepoURL='https://api.github.com/repos/lsst-it/lsst-control/languages'
+
+response = requests.get(apiRepoURL, headers=myHeader)
+
+jsonObj=response.json()
+sumBytes=0
+
+for langName in jsonObj:
+        nBytes = jsonObj[langName]
+        sumBytes+=nBytes
+        nMegabytes = nBytes / (1<<20)
+        print(f"{langName} with {nMegabytes} megabytes of code")
+
+print(f"Total gigabytes of code : {sumBytes/(1<<30)}")
 
